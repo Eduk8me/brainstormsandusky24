@@ -1,0 +1,35 @@
+#!/bin/bash
+
+#my="/usr/bin/mysql --defaults-extra-file=~/.readonly.cnf kcs"
+
+source defaults
+
+chromebook="${1}"
+
+if [ $# -eq 0 ]; then
+	read -p "Chromebook asset #: "
+	chromebook="${REPLY}"
+fi
+
+crosid=$(cat /home/sysadmin/Development/chromebooks/chromebooks.csv | grep ,${chromebook}$ | cut -f1 -d",")
+user=$(${gam} info cros ${crosid} fields user | grep annotatedUser | cut -d ":" -f 2)
+
+echo "User: ${user}"
+
+${my} -e "SELECT description,serial FROM inventory WHERE id=\"${chromebook}\""
+
+${my} -e "SELECT users.uid,firstname,lastname,username \
+            FROM users,chromebooks \
+            WHERE users.uid=chromebooks.uid \
+            AND chromebooks.asset=\"${chromebook}\""
+
+# Assignment log
+
+${my} -e "SELECT dateassigned,users.uid,firstname,lastname,username \
+            from users,assignedlog \
+            where users.uid=assignedlog.uid \
+            AND chromebook=\"${chromebook}\" \
+            ORDER BY dateassigned ASC"
+
+echo "Recent Users:"
+${gam} info cros ${crosid} listlimit 5 fields recentusers | grep email

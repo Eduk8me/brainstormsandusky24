@@ -1,0 +1,12 @@
+
+my="/usr/bin/mysql --defaults-extra-file=~/.my.cnf kcs"
+gam="/home/sysadmin/bin/gamadv-xtd3/gam"
+
+#export NEWT_COLORS='
+#    root=white,blue
+#    window=blue,white
+#    title=white,blue
+#    border=white,blue
+#    textbox=white,blue
+#    button=black,white
+#'

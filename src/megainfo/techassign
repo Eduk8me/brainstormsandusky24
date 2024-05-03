@@ -1,0 +1,60 @@
+#!/bin/bash
+
+#my="/usr/bin/mysql --defaults-extra-file=~/.my.cnf kcs"
+
+source defaults
+
+echo "Asset IDs:"
+echo "2000 - OHP"
+echo "2001 - BYOD"
+
+read -p "Inventory ID: "
+chromebook="${REPLY}"
+crosid=$(cat /home/sysadmin/Development/chromebooks/chromebooks.csv | grep ,${chromebook}$ | cut -f1 -d",")
+status=$(${gam} info cros "${crosid}" | grep "status" | cut -f4 -d " ")
+
+echo "Chromebook is ${status} and assigned to:"
+
+${my} -e "SELECT users.uid,firstname,lastname,username \
+            FROM users,chromebooks \
+            WHERE users.uid=chromebooks.uid \
+            AND chromebooks.asset=\"${chromebook}\""
+
+echo ""
+echo "Status codes:"
+echo "1000 - Tech Department"
+echo "1001 - Stolen"
+echo "1002 - Disposed"
+
+read -p "Assign to: "
+newuid="${REPLY}"
+
+
+echo "Assign to:"
+${my} -e "SELECT uid,firstname,lastname,username FROM users WHERE uid=\"${newuid}\""
+
+read -p "Do it? (y/N) "
+
+if [[ $REPLY =~ ^[Yy]$ ]]
+then
+    echo "Assigning ${chromebook} to ${newuid}..."
+    if [ ${newuid} = "1000" ]; then
+        # If disabled, reanable
+        echo "${crosid}"
+        echo "${chromebook} current status is ${status}"
+        if [ ${status} = "DISABLED" ]; then
+            echo "Re-enabling ${chromebook}..."
+            ${gam} update cros ${crosid} action reenable
+        else
+            echo "${chromebook} is already enabled."
+         fi
+    fi
+
+    newuser=$(${my} -se "SELECT emailaddress FROM users WHERE uid=\"${newuid}\"")
+    ${gam} update cros ${crosid} user "${newuser}"
+    ${my} -e "INSERT INTO assignedlog (chromebook,uid) VALUES (${chromebook},${newuid})"
+    ${my} -e "REPLACE INTO chromebooks (uid,asset) VALUES(${newuid},${chromebook}) "
+    echo "Assigned"
+else
+	echo "Aborting operation!"
+fi

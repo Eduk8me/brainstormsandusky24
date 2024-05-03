@@ -1,0 +1,40 @@
+#!/bin/bash
+
+apps="/home/sysadmin/Development/megainfo"
+cd "${apps}"
+
+source defaults
+
+cbinfo="${apps}/techinfo"
+cbassign="${apps}/techassign"
+userinfo="${apps}/userinfo"
+togglecbenable="${apps}/togglecbenable.sh"
+
+press_enter() {
+    echo ""
+    echo -n "    Press Enter to continue "
+    read
+}
+
+until [ "${selection}" = "exit" ]; do
+selection=$(
+whiptail --title "MegaInfo Menu" --menu "Choose an option:" 25 78 16 \
+    "Show User" "Display user information" \
+    "Show Tech" "Display information about technology equipment" \
+    "Assign Technology" "Assign Technology to User" \
+    "Toggle CB Enable" "Re-enable/disable Chromebook" \
+    "Exit" "Quit MegaInfo" \
+    3>&2 2>&1 1>&3
+
+)
+
+
+    case ${selection} in
+        "Show User" ) clear ; ${userinfo} ; press_enter ;;
+        "Show Tech" ) clear ; ${cbinfo}; press_enter ;;
+        "Assign Technology" ) clear ; ${cbassign} ; press_enter ;;
+        "Toggle CB Enable" ) clear ; ${togglecbenable} ; press_enter ;;
+        "Exit" ) exit ;;
+        * ) echo " Incorrect Selection" ; press_enter ; clear ;;
+    esac
+done

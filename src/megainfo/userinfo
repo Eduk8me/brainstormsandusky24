@@ -1,0 +1,25 @@
+#!/bin/bash
+
+source defaults
+
+read -p "Search for user: " u
+
+${my} -e "SELECT uid,username,firstname,lastname,status \
+            FROM users \
+            WHERE \
+                uid LIKE \"%${u}%\" \
+                OR username LIKE \"%${u}%\" \
+                OR firstname LIKE \"%${u}%\" \
+                OR lastname LIKE \"%${u}%\" \
+            ORDER BY lastname,firstname \
+            LIMIT 10"
+
+
+
+read -p "Equipment assigned to: " uid
+${my} -e "SELECT chromebooks.asset,inventory.type,inventory.description \
+            FROM chromebooks \
+            LEFT JOIN inventory \
+            ON chromebooks.asset = inventory.id \
+            WHERE \
+                chromebooks.uid=\"${uid}\""
